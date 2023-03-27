@@ -3,7 +3,8 @@ using Revise, ApproxOperator, CairoMakie
 elements,points = ApproxOperator.importcomsol("圆形骨料.mphtxt")
 
 f = Figure()
-Axis(f[1,1])
+ax = Axis(f[1,1])
+ax.aspect = AxisAspect(1)
 
 for a in elements["Ω"]
     xs = [p.x for p in a.vertices[[1,2,3,1]]]
