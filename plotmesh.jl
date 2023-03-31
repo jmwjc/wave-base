@@ -1,6 +1,6 @@
 using Revise, ApproxOperator, CairoMakie
 
-elements,points = ApproxOperator.importcomsol("圆形骨料.mphtxt")
+elements,points,entities = ApproxOperator.importcomsol("圆形骨料.mphtxt")
 
 f = Figure()
 ax = Axis(f[1,1])
@@ -12,7 +12,9 @@ for a in elements["Ω"]
     lines!(xs,ys,linewidth = 0.5, color = :black)
 end
 
-for a in elements["Γ"]
+index = findall(x->x∈(0,1,2,6,8),entities["Γ"])
+# index = findall(x->x∈(14,),entities["Γ"])
+for a in elements["Γ"][index]
     xs = [p.x for p in a.vertices]
     ys = [p.y for p in a.vertices]
     lines!(xs,ys,linewidth = 1.0, color = :blue)
