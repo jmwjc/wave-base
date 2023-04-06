@@ -22,8 +22,8 @@ ops = [
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
-ops[1].(elements["Ω"];k=k)
-ops[2].(elements["Γ"];k=k,f=f)
+ops[1].(elements["Ω"],k=k)
+ops[2].(elements["Γ"],k=k,f=f)
 
 d = k\f
 push!(getfield(nodes[1],:data),:d=>(1,d))
