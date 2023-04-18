@@ -1,5 +1,5 @@
 
-using Revise, ApproxOperator, BenchmarkTools, YAML
+using Revise, ApproxOperator, BenchmarkTools
 
 elements,nodes = ApproxOperator.importmsh_fem("./msh/test.msh")
 # elements,nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
@@ -10,7 +10,7 @@ nₚ = length(nodes)
 set𝝭!.(elements["Ω"])
 set∇𝝭!.(elements["Ω"])
 set𝝭!.(elements["Γ"])
-
+set𝝭!.(elements["Γᵗ"])
 E = 3e6
 ν=0.3
 u(x,y) = x+y
