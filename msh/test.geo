@@ -19,7 +19,7 @@ Plane Surface(1) = {1};
 
 Physical Curve("Γ") = {1,2,3,4};
 Physical Surface("Ω") = {1};
-Physical Point("Γ") = {5};
+Physical Point("Γᵗ") = {5};
 
 Transfinite Curve{1,2,3,4} = n+1;
 Mesh.Algorithm = 1;

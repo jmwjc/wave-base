@@ -55,17 +55,17 @@ Hₑ_PlaneStress = ops[3](elements["Ω"])
 # 𝑓 = 100
 # total_time = 10.0
 # times = 0.0:Δt:total_time
-# d = zeros(nₚ)
+# d = zeros(2nₚ)
 # x = zeros(length(times))
 # deflection = zeros(length(times))
 # dexact = zeros(length(times))
-# v = zeros(nₚ)
-# aₙ = zeros(nₚ)
+# v = zeros(2nₚ)
+# aₙ = zeros(2nₚ)
 # for (n,t) in enumerate(times)
 
 #     prescribe!(elements["Γ"],:V=>(x,y,z)->F₀*sin(2Θ*𝑓*t))   
                        
-#     fₙ = zeros(nₚ)
+#     fₙ = zeros(2nₚ)
 #     ops[4](elements["Γ"],fₙ)
 
 #     # predictor phase
