@@ -63,7 +63,8 @@ v = zeros(2nₚ)
 aₙ = zeros(2nₚ)
 for (n,t) in enumerate(times)
 
-    prescribe!(elements["Γᵗ"],:V=>(x,y,z)->F₀*sin(2Θ*𝑓*t))                 
+    prescribe!(elements["Γᵗ"],:t₁=>(x,y,z)->F₀*sin(2Θ*𝑓*t))                 
+    prescribe!(elements["Γᵗ"],:t₂=>(x,y,z)->F₀*sin(2Θ*𝑓*t))                 
   
     fₙ = zeros(2nₚ)
     ops[4](elements["Γᵗ"],fₙ)
@@ -77,16 +78,6 @@ for (n,t) in enumerate(times)
     v .+= γ*Δt*a
     aₙ .= a
 
-    # cal deflection
-    ξ = elements["Γᵗ"][1].𝓖[1]
-    N = ξ[:𝝭]
-    for (i,xᵢ) in enumerate(elements["Γᵗ"][1].𝓒)
-        I = xᵢ.𝐼
-        deflection[n] += N[i]*d[I]
-    end 
-
-   # cal exact solution
-    dexact[n] = w(5.0,t)
 
 end
 

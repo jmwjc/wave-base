@@ -91,7 +91,7 @@ function import_msh_2(fid::IO)
     return elements, points, entities
 end
 
-function importmsh_fem(filename::String)
+function import_fem(filename::String)
     elms,nds = importmsh(filename)
     nₚ = length(nds)
     nodes = Node{(:𝐼,),1}[]
