@@ -1,5 +1,5 @@
 
-function importmsh_fem(filename::String)
+function import_fem(filename::String)
     elms,nds = importmsh(filename)
     nₚ = length(nds)
     nodes = Node{(:𝐼,),1}[]
