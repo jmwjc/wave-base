@@ -1,7 +1,7 @@
 
 using Revise, ApproxOperator, BenchmarkTools
-# include("D:/wave-base/importmsh.jl")
-elements,nodes = ApproxOperator.importmsh_fem("./msh/test.msh")
+include("D:/wave-base/importmsh.jl")
+elements,nodes = importmsh_fem("./msh/test.msh")
 # elements,nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 # nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 
@@ -13,29 +13,26 @@ set𝝭!.(elements["Γ"])
 set𝝭!.(elements["Γᵗ"])
 E = 3e6
 ν=0.3
-u(x,y) = x+y
-v(x,y) = x+y
-∂u∂x(x,y) = 1.0
-∂u∂y(x,y) = 1.0
-∂v∂x(x,y) = 1.0
-∂v∂y(x,y) = 1.0
-ApproxOperator.prescribe!(elements["Γ"],:g₁=>(x,y,z)->u(x,y))
-ApproxOperator.prescribe!(elements["Γ"],:g₂=>(x,y,z)->v(x,y))
+u(x,y) = 0.0
+v(x,y) = 0.0
+
+ApproxOperator.prescribe!(elements["Γ"],:g₁=>(x,y,z)->0.0)
+ApproxOperator.prescribe!(elements["Γ"],:g₂=>(x,y,z)->0.0)
 ApproxOperator.prescribe!(elements["Γ"],:n₁₁=>(x,y,z)->1.0)
 ApproxOperator.prescribe!(elements["Γ"],:n₁₂=>(x,y,z)->0.0)
 ApproxOperator.prescribe!(elements["Γ"],:n₂₂=>(x,y,z)->1.0)
 ApproxOperator.prescribe!(elements["Ω"],:u=>(x,y,z)->u(x,y))
 ApproxOperator.prescribe!(elements["Ω"],:v=>(x,y,z)->v(x,y))
-ApproxOperator.prescribe!(elements["Ω"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
-ApproxOperator.prescribe!(elements["Ω"],:∂u∂y=>(x,y,z)->∂u∂y(x,y))
-ApproxOperator.prescribe!(elements["Ω"],:∂v∂x=>(x,y,z)->∂v∂x(x,y))
-ApproxOperator.prescribe!(elements["Ω"],:∂v∂y=>(x,y,z)->∂v∂y(x,y))
+ApproxOperator.prescribe!(elements["Ω"],:∂u∂x=>(x,y,z)->0.0)
+ApproxOperator.prescribe!(elements["Ω"],:∂u∂y=>(x,y,z)->0.0)
+ApproxOperator.prescribe!(elements["Ω"],:∂v∂x=>(x,y,z)->0.0)
+ApproxOperator.prescribe!(elements["Ω"],:∂v∂y=>(x,y,z)->0.0)
 
 ops = [
     Operator{:∫∫εᵢⱼσᵢⱼdxdy}(:E=>E,:ν=>ν),
     Operator{:∫vᵢgᵢds}(:α=>1e13*E),
     Operator{:Hₑ_PlaneStress}(:E=>E,:ν=>ν),
-    Operator{:∫wVdΓ}()
+    Operator{:∫vᵢtᵢds}()
 ]
 
 k = zeros(2*nₚ,2*nₚ)
@@ -63,8 +60,8 @@ v = zeros(2nₚ)
 aₙ = zeros(2nₚ)
 for (n,t) in enumerate(times)
 
-    prescribe!(elements["Γᵗ"],:V=>(x,y,z)->F₀*sin(2Θ*𝑓*t))                 
-  
+    prescribe!(elements["Γᵗ"],:t₁=>(x,y,z)->F₀*sin(2Θ*𝑓*t))                 
+    prescribe!(elements["Γᵗ"],:t₂=>(x,y,z)->F₀*sin(2Θ*𝑓*t))
     fₙ = zeros(2nₚ)
     ops[4](elements["Γᵗ"],fₙ)
 
@@ -76,17 +73,6 @@ for (n,t) in enumerate(times)
     d .+= β*Δt^2*a 
     v .+= γ*Δt*a
     aₙ .= a
-
-    # cal deflection
-    ξ = elements["Γᵗ"][1].𝓖[1]
-    N = ξ[:𝝭]
-    for (i,xᵢ) in enumerate(elements["Γᵗ"][1].𝓒)
-        I = xᵢ.𝐼
-        deflection[n] += N[i]*d[I]
-    end 
-
-   # cal exact solution
-    dexact[n] = w(5.0,t)
 
 end
 
