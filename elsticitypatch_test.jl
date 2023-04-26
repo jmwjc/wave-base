@@ -1,7 +1,7 @@
 
 using Revise, ApproxOperator, BenchmarkTools
 include("D:/wave-base/importmsh.jl")
-elements,nodes = importmsh_fem("./msh/test.msh")
+elements,nodes = import_fem("./msh/test.msh")
 # elements,nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 # nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 
