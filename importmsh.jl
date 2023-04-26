@@ -1,6 +1,6 @@
 
 function import_fem(filename::String)
-    elms,nds = importmsh(filename)
+    elms,nds = ApproxOperator.importmsh(filename)
     nₚ = length(nds)
     nodes = Node{(:𝐼,),1}[]
     data = Dict([:x=>(1,zeros(nₚ)),:y=>(1,zeros(nₚ)),:z=>(1,zeros(nₚ))])
@@ -24,7 +24,7 @@ function import_fem(filename::String)
     gauss_scheme = :TriGI3
     nₑ = length(elms["Ω"])
 
-    scheme = quadraturerule(gauss_scheme)
+    scheme = ApproxOperator.quadraturerule(gauss_scheme)
     data_𝓖 = Dict([
         :ξ=>(1,scheme[:ξ]),
         :η=>(1,scheme[:η]),
@@ -45,7 +45,7 @@ function import_fem(filename::String)
         end
         c += 3
 
-        𝐴 = get𝐴(a)
+        𝐴 = ApproxOperator.get𝐴(a)
         for i in 1:ng
             G += 1
             x = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}((i,G,C,s),data_𝓖)
@@ -72,7 +72,7 @@ function import_fem(filename::String)
     s = 0
     ng = 2 
     gauss_scheme = :SegGI2
-    scheme = quadraturerule(gauss_scheme)
+    scheme = ApproxOperator.quadraturerule(gauss_scheme)
     nₑ = length(elms["Γ"])
 
     data_𝓖 = Dict([
@@ -92,7 +92,7 @@ function import_fem(filename::String)
         end
         c += 2
        
-        𝐿 = get𝐿(a)
+        𝐿 = ApproxOperator.get𝐿(a)
         for i in 1:ng
             G += 1
             x = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}((i,G,C,s),data_𝓖)
