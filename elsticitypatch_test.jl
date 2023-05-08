@@ -20,11 +20,12 @@ Cᵢⱼᵢⱼ = E/2/(1+ν)
 
 ρ = 1.0
 
-ApproxOperator.prescribe!(elements["Γ"],:g₁=>(x,y,z)->0.0)
-ApproxOperator.prescribe!(elements["Γ"],:g₂=>(x,y,z)->0.0)
-ApproxOperator.prescribe!(elements["Γ"],:n₁₁=>(x,y,z)->1.0)
-ApproxOperator.prescribe!(elements["Γ"],:n₁₂=>(x,y,z)->0.0)
-ApproxOperator.prescribe!(elements["Γ"],:n₂₂=>(x,y,z)->1.0)
+prescribe!(elements["Γ"],:g₁=>(x,y,z)->0.0)
+prescribe!(elements["Γ"],:g₂=>(x,y,z)->0.0)
+prescribe!(elements["Γ"],:n₁₁=>(x,y,z,n₁,n₂)->n₁*n₁)
+prescribe!(elements["Γ"],:n₁₂=>(x,y,z,n₁,n₂)->n₁*n₂)
+prescribe!(elements["Γ"],:n₂₂=>(x,y,z,n₁,n₂)->n₂*n₂)
+prescribe!(elements["Γᵗ"],:t₁=>(x,y,z)->0.0)                 
 
 ops = [
     Operator{:∫∫εᵢⱼσᵢⱼdxdy}(:E=>E,:ν=>ν),
@@ -50,17 +51,21 @@ F₀ = 1e-7
 Θ = π
 β = 0.25
 γ = 0.5
-Δt = 0.01
 𝑓 = 100000
-total_time = 1/𝑓
+force_time = 1/𝑓
+Δt = force_time/10
+total_time = 100*Δt
 times = 0.0:Δt:total_time
 d = zeros(2nₚ)
 v = zeros(2nₚ)
 aₙ = zeros(2nₚ)
 for (n,t) in enumerate(times)
 
-    prescribe!(elements["Γᵗ"],:t₁=>(x,y,z)->0.0)                 
-    prescribe!(elements["Γᵗ"],:t₂=>(x,y,z)->F₀*sin(2Θ*𝑓*t))
+    if t ≤ force_time
+        prescribe!(elements["Γᵗ"],:t₂=>(x,y,z)->F₀*sin(2Θ*𝑓*t))
+    else
+        prescribe!(elements["Γᵗ"],:t₂=>(x,y,z)->0.0)
+    end
     fill!(f,0.0)
     ops[3](elements["Γᵗ"],f)
 
@@ -129,4 +134,5 @@ for (n,t) in enumerate(times)
             end
         end
     end
+    close(fo)
 end

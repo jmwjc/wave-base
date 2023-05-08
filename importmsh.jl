@@ -82,6 +82,8 @@ function import_fem(filename::String)
         :y=>(2,zeros(ng*nₑ)),
         :z=>(2,zeros(ng*nₑ)),
         :𝑤=>(2,zeros(ng*nₑ)),
+        :n₁=>(3,zeros(nₑ)),
+        :n₂=>(3,zeros(nₑ)),
         :𝝭=>(4,zeros(ng*nₑ*2)),
     ])
     for (C,a) in enumerate(elms["Γ"])
@@ -93,6 +95,12 @@ function import_fem(filename::String)
         c += 2
        
         𝐿 = ApproxOperator.get𝐿(a)
+        x₁ = a.vertices[1].x
+        x₂ = a.vertices[2].x
+        y₁ = a.vertices[1].y
+        y₂ = a.vertices[2].y
+        n₁ = (y₂-y₁)/𝐿
+        n₂ = (x₁-x₂)/𝐿
         for i in 1:ng
             G += 1
             x = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}((i,G,C,s),data_𝓖)
@@ -105,6 +113,8 @@ function import_fem(filename::String)
             push!(𝓖,x)
             s += 2
         end
+        element.n₁ = n₁
+        element.n₂ = n₂
         g += ng
         push!(elements["Γ"],element)
     end
