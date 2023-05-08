@@ -46,13 +46,13 @@ d₁ = zeros(nₚ)
 d₂ = zeros(nₚ)
 push!(nodes,:d₁=>d₁,:d₂=>d₂)
 
-F₀ = 1.0
+F₀ = 1e-7
 Θ = π
 β = 0.25
 γ = 0.5
 Δt = 0.01
-𝑓 = 100
-total_time = 10.0
+𝑓 = 100000
+total_time = 1/𝑓
 times = 0.0:Δt:total_time
 d = zeros(2nₚ)
 v = zeros(2nₚ)
@@ -72,7 +72,7 @@ for (n,t) in enumerate(times)
     global d .+= β*Δt^2*a 
     global v .+= γ*Δt*a
     global aₙ .= a
-    println(a)
+
 
     d₁ .= d[1:2:2*nₚ]
     d₂ .= d[2:2:2*nₚ]
