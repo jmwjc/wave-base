@@ -1,6 +1,6 @@
 
 a = 205;
-n = 1;
+n = 40;
 
 Point(1) = { -a,  -a, 0.0, a/n};
 Point(2) = {  a,  -a, 0.0, a/n};
@@ -18,7 +18,7 @@ Curve Loop(1) = {1,2,3,4,5};
 
 Plane Surface(1) = {1};
 
-Physical Curve("Γ") = {1,2,3,4,5};
+Physical Curve("Γ") = {3,4,5};
 Physical Surface("Ω") = {1};
 Physical Point("Γᵗ") = {5};
 
