@@ -1,9 +1,12 @@
 
-using Revise, ApproxOperator, BenchmarkTools, Printf
+using Revise, ApproxOperator, BenchmarkTools, Printf, SparseArrays, Pardiso
 include("importmsh.jl")
-elements,nodes = import_fem("./msh/test_40.msh")
+elements,nodes = import_fem("./msh/test_50.msh")
 # elements,nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 # nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
+
+ps = MKLPardisoSolver()
+set_matrixtype!(ps,2)
 
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -34,14 +37,17 @@ ops = [
     Operator{:∫∫ρvᵢuᵢdxdy}(:ρ=>ρ)
 ]
 
-k = zeros(2*nₚ,2*nₚ)
-m = zeros(2*nₚ,2*nₚ)
-kα = zeros(2*nₚ,2*nₚ)
+# k = zeros(2*nₚ,2*nₚ)
+# m = zeros(2*nₚ,2*nₚ)
+# kα = zeros(2*nₚ,2*nₚ)
+k = spzeros(2*nₚ,2*nₚ)
+m = spzeros(2*nₚ,2*nₚ)
 f = zeros(2*nₚ)
 fα = zeros(2*nₚ)
+
 ops[1](elements["Ω"],k)
 ops[4](elements["Ω"],m)
-ops[2](elements["Γ"],kα,fα)
+ops[2](elements["Γ"],k,fα)
 
 d₁ = zeros(nₚ)
 d₂ = zeros(nₚ)
@@ -58,6 +64,7 @@ total_time = 250*Δt
 times = 0.0:Δt:total_time
 d = zeros(2nₚ)
 v = zeros(2nₚ)
+a = zeros(2nₚ)
 aₙ = zeros(2nₚ)
 for (n,t) in enumerate(times)
 
@@ -72,7 +79,9 @@ for (n,t) in enumerate(times)
     # predictor phase
     global d .+= Δt*v + Δt^2/2.0*(1.0-2.0*β)*aₙ
     global v .+= Δt*(1.0-γ)*aₙ
-    a = (m + β*Δt^2*(k+kα))\(f+fα-(k+kα)*d)
+    # a = (m + β*Δt^2*k)\(f+fα-k*d)
+    solve!(ps,a,m + β*Δt^2*k,f+fα-k*d)
+
     # Corrector phase
     global d .+= β*Δt^2*a 
     global v .+= γ*Δt*a
@@ -82,7 +91,7 @@ for (n,t) in enumerate(times)
     d₁ .= d[1:2:2*nₚ]
     d₂ .= d[2:2:2*nₚ]
 
-    fo = open("./vtk/40/figure"*string(n,pad=4)*".vtk","w")
+    fo = open("./vtk/50/figure"*string(n,pad=4)*".vtk","w")
     @printf fo "# vtk DataFile Version 2.0\n"
     @printf fo "Test\n"
     @printf fo "ASCII\n"
