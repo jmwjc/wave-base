@@ -2,7 +2,17 @@
 using  ApproxOperator, LinearAlgebra, Printf
 
 include("input.jl")
+elements,nodes = import_gauss_quadratic("./msh/test_30.msh",:TriGI3)
 
+nₚ = length(nodes)
+nₑ = length(elements["Ω"])
+s = 2.5*410/30*ones(nₚ)
+push!(nodes,:s₁=>s,:s₂=>s,:s₃=>s)
+
+set𝝭!.(elements["Ω"])
+set∇𝝭!.(elements["Ω"])
+set𝝭!.(elements["Γ"])
+set𝝭!.(elements["Γᵗ"])
 
 err = 0.0
 for ap in elements["Ω"]
