@@ -15,7 +15,7 @@ function import_gauss_quadratic(filename::String,s::Symbol)
     end
     sp = ApproxOperator.RegularGrid(x,y,z,n=3,γ=5)
 
-    parameters = (:Wave2D,:□,:CubicSpline)
+    parameters = (:Quadratic2D,:□,:CubicSpline)
     scheme = ApproxOperator.quadraturerule(s)
     n𝒑 = 21
 
@@ -87,32 +87,47 @@ function import_gauss_quadratic(filename::String,s::Symbol)
             s += getfield(elements["Ω"][C],:𝓒)[2]
         end
     end
-    
-    if haskey(elms,"Γᵗ")
-        𝓒 = [nodes[5]]
-        𝓖 = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}[]
-        c = 0
-        g = 0
-        ns = 0
-        gauss_scheme = :PoiGI1
-        scheme = ApproxOperator.quadraturerule(gauss_scheme)
-        nₑ = length(elms["Γᵗ"])
-        element = ReproducingKernel{parameters...,:Poi1}((c,1,𝓒),(g,1,𝓖))
+ 
+    𝓒 = Node{(:𝐼,),1}[]
+    𝓖 = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}[]
+    c = 0
+    g = 0
+    ns = 0
+    ng = 1
+    gauss_scheme = :PoiGI1
+    scheme = ApproxOperator.quadraturerule(gauss_scheme)
+    nₑ = length(elms["Γᵗ"])
+    for (C,a) in enumerate(elms["Γᵗ"])
+        indices = Set{Int}()
+        for i in 1:ng
+            ξ = scheme[:ξ][1]
+            x,y,z = a(ξ)
+            union!(indices,sp(x,y,z))
+        end
+        nc = length(indices)
+        for i in indices
+            push!(𝓒,nodes[i])
+        end
+        element = ReproducingKernel{parameters...,:Poi1}((c,nc,𝓒),(g,ng,𝓖))
         push!(elements["Γᵗ"],element)
-        G = 0
-        s = 0
-        data_𝓖 = Dict([
-            :ξ=>(1,scheme[:ξ]),
-            :w=>(1,scheme[:w]),
-            :x=>(2,[0.]),
-            :y=>(2,[0.]),
-            :z=>(2,[0.]),
-            :𝑤=>(2,[1.]),
-            :𝗠=>(0,zeros(n𝒑)),
-            :𝝭=>(4,[1.])
-        ])
-        push!(𝓖,x)
+        c += nc
+        g += ng
+        ns += ng*nc
     end
+
+    G = 0
+    s = 0
+    data_𝓖 = Dict([
+        :ξ=>(1,scheme[:ξ]),
+        :w=>(1,scheme[:w]),
+        :x=>(2,[0.]),
+        :y=>(2,[0.]),
+        :z=>(2,[0.]),
+        :𝑤=>(2,[1.]),
+        :𝝭=>(4,[1.])
+       ])
+    push!(𝓖,x)
+
 
     𝓒 = Node{(:𝐼,),1}[]
     𝓖 = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}[]
@@ -183,7 +198,5 @@ function import_gauss_quadratic(filename::String,s::Symbol)
         elements["Γ"][C].n₁ = n₁
         elements["Γ"][C].n₂ = n₂
     end
-
-
     return elements,nodes,elms
 end
