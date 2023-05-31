@@ -15,9 +15,11 @@ function import_gauss_quadratic(filename::String,s::Symbol)
     end
     sp = ApproxOperator.RegularGrid(x,y,z,n=3,γ=5)
 
-    parameters = (:Quadratic2D,:□,:CubicSpline)
+    # parameters = (:Quadratic2D,:□,:CubicSpline)
+    # n𝒑 = 21
+    parameters = (:Wave2D,:□,:CubicSpline)
+    n𝒑 = 15
     scheme = ApproxOperator.quadraturerule(s)
-    n𝒑 = 21
 
     elements = Dict([
         "Ω"=>ReproducingKernel{parameters...,:Tri3}[],
@@ -101,7 +103,7 @@ function import_gauss_quadratic(filename::String,s::Symbol)
         indices = Set{Int}()
         for i in 1:ng
             ξ = scheme[:ξ][1]
-            x,y,z = a(ξ)
+            x,y,z = a.x,a.y,a.z
             union!(indices,sp(x,y,z))
         end
         nc = length(indices)
@@ -124,10 +126,23 @@ function import_gauss_quadratic(filename::String,s::Symbol)
         :y=>(2,[0.]),
         :z=>(2,[0.]),
         :𝑤=>(2,[1.]),
-        :𝝭=>(4,[1.])
+        :𝝭=>(4,zeros(ns)),
+        :𝗠=>(0,zeros(n𝒑))
        ])
-    push!(𝓖,x)
-
+    for (C,a) in enumerate(elms["Γᵗ"])
+        x_ = a.x
+        y_ = a.y
+        for i in 1:ng
+            G += 1
+            x = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}((i,G,C,s),data_𝓖)
+            x.x = x_
+            x.y = y_
+            x.z = 0.0
+            x.𝑤 = 1.0
+            push!(𝓖,x)
+            s += getfield(elements["Γᵗ"][C],:𝓒)[2]
+        end
+    end
 
     𝓒 = Node{(:𝐼,),1}[]
     𝓖 = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}[]
