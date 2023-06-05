@@ -1,5 +1,6 @@
-function import_gauss_quadratic(filename::String,s::Symbol)
+function import_gauss_quadratic(filename::String,fileoname::String,s::Symbol)
     elms,nds = ApproxOperator.importmsh(filename)
+    elms_output,nds_output = ApproxOperator.importmsh(fileoname)
     nₚ = length(nds)
     nodes = Node{(:𝐼,),1}[]
     x = zeros(nₚ)
@@ -23,6 +24,7 @@ function import_gauss_quadratic(filename::String,s::Symbol)
 
     elements = Dict([
         "Ω"=>ReproducingKernel{parameters...,:Tri3}[],
+        "Ωₒ"=>ReproducingKernel{parameters...,:Poi1}[],
         "Γᵗ"=>ReproducingKernel{parameters...,:Poi1}[],
         "Γ"=>ReproducingKernel{parameters...,:Seg2}[],
     ])
@@ -102,7 +104,6 @@ function import_gauss_quadratic(filename::String,s::Symbol)
     for (C,a) in enumerate(elms["Γᵗ"])
         indices = Set{Int}()
         for i in 1:ng
-            ξ = scheme[:ξ][1]
             x,y,z = a.x,a.y,a.z
             union!(indices,sp(x,y,z))
         end
@@ -213,5 +214,60 @@ function import_gauss_quadratic(filename::String,s::Symbol)
         elements["Γ"][C].n₁ = n₁
         elements["Γ"][C].n₂ = n₂
     end
-    return elements,nodes,elms
+
+    scheme = ApproxOperator.quadraturerule(:PoiGI1)
+
+    𝓒 = Node{(:𝐼,),1}[]
+    𝓖 = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}[]
+    c = 0
+    g = 0
+    ng = length(scheme[:w])
+    ns = 0
+    nₑ = length(nds_output)
+
+    for (C,a) in enumerate(nds_output)
+        indices = Set{Int}()
+        for i in 1:ng
+            x,y,z = a.x,a.y,a.z
+            union!(indices,sp(x,y,z))
+        end
+        nc = length(indices)
+        for i in indices
+            push!(𝓒,nodes[i])
+        end
+        element = ReproducingKernel{parameters...,:Poi1}((c,nc,𝓒),(g,ng,𝓖))
+        push!(elements["Ωₒ"],element)
+
+        c += nc
+        g += ng
+        ns += nc*ng
+    end
+
+    data = Dict([
+        :x=>(2,zeros(g)),
+        :y=>(2,zeros(g)),
+        :z=>(2,zeros(g)),
+        :𝝭=>(4,zeros(ns)),
+        :∂𝝭∂x=>(4,zeros(ns)),
+        :∂𝝭∂y=>(4,zeros(ns)),
+        :𝗠=>(0,zeros(n𝒑)),
+        :∂𝗠∂x=>(0,zeros(n𝒑)),
+        :∂𝗠∂y=>(0,zeros(n𝒑)),
+    ])
+    
+    G = 0
+    s = 0
+    for (C,a) in enumerate(nds_output)
+        for i in 1:ng
+            G += 1
+            x = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}((i,G,C,s),data)
+            x.x = a.x
+            x.y = a.y
+            x.z = a.z
+            push!(𝓖,x)
+            s += getfield(elements["Ωₒ"][C],:𝓒)[2]
+        end
+    end
+
+    return elements,nodes,elms_output,nds_output
 end
