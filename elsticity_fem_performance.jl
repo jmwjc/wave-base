@@ -1,20 +1,23 @@
 
-using Revise, ApproxOperator, BenchmarkTools, Printf, SparseArrays, Pardiso
+using Revise, ApproxOperator, BenchmarkTools, Printf, SparseArrays, Pardiso, TimerOutputs
 include("importmsh.jl")
 elements,nodes = import_fem("./msh/test_50.msh")
 # elements,nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 # nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 
+const to = TimerOutput()
 ps = MKLPardisoSolver()
 set_matrixtype!(ps,2)
 
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
+@timeit to "shape function" begin
 set𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γ"])
 set𝝭!(elements["Γᵗ"])
+end
 E = 3e6
 ν=0.3
 Cᵢᵢᵢᵢ = E/(1-ν^2)
@@ -30,6 +33,7 @@ prescribe!(elements["Γ"],:n₁₂=>(x,y,z,n₁,n₂)->n₁*n₂)
 prescribe!(elements["Γ"],:n₂₂=>(x,y,z,n₁,n₂)->n₂*n₂)
 prescribe!(elements["Γᵗ"],:t₁=>(x,y,z)->0.0)                 
 
+@timeit to "assembly matrix" begin
 ops = [
     Operator{:∫∫εᵢⱼσᵢⱼdxdy}(:E=>E,:ν=>ν),
     Operator{:∫vᵢgᵢds}(:α=>1e13*E),
@@ -48,6 +52,7 @@ fα = zeros(2*nₚ)
 ops[1](elements["Ω"],k)
 ops[4](elements["Ω"],m)
 ops[2](elements["Γ"],k,fα)
+end
 
 d₁ = zeros(nₚ)
 d₂ = zeros(nₚ)
@@ -59,7 +64,7 @@ F₀ = 1
 γ = 0.5
 𝑓 = 100
 force_time = 1/𝑓
-Δt = force_time/10
+Δt = π*force_time/80
 total_time = 250*Δt
 times = 0.0:Δt:total_time
 d = zeros(2nₚ)
@@ -76,6 +81,7 @@ for (n,t) in enumerate(times)
     fill!(f,0.0)
     ops[3](elements["Γᵗ"],f)
 
+    @timeit to "solve" begin
     # predictor phase
     global d .+= Δt*v + Δt^2/2.0*(1.0-2.0*β)*aₙ
     global v .+= Δt*(1.0-γ)*aₙ
@@ -86,8 +92,10 @@ for (n,t) in enumerate(times)
     global d .+= β*Δt^2*a 
     global v .+= γ*Δt*a
     global aₙ .= a
+    end
 
 
+    @timeit to "output" begin
     d₁ .= d[1:2:2*nₚ]
     d₂ .= d[2:2:2*nₚ]
 
@@ -144,4 +152,6 @@ for (n,t) in enumerate(times)
         end
     end
     close(fo)
+    end
 end
+show(to)

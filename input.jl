@@ -14,9 +14,9 @@ function import_gauss_quadratic(filename::String,fileoname::String,s::Symbol)
         node.z = p.z
         push!(nodes,node)
     end
-    sp = ApproxOperator.RegularGrid(x,y,z,n=3,γ=5)
+    sp = ApproxOperator.RegularGrid(x,y,z,n=1,γ=2)
 
-    parameters = (:Quadratic2D,:□,:CubicSpline)
+    parameters = (:Linear2D,:□,:CubicSpline)
     n𝒑 = 21
     # parameters = (:Wave2D,:□,:CubicSpline)
     # n𝒑 = 15
