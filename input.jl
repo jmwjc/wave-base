@@ -16,10 +16,11 @@ function import_gauss_quadratic(filename::String,fileoname::String,s::Symbol)
     end
     sp = ApproxOperator.RegularGrid(x,y,z,n=1,γ=2)
 
-    parameters = (:Linear2D,:□,:CubicSpline)
-    n𝒑 = 21
+    # parameters = (:Linear2D,:□,:CubicSpline)
+    # n𝒑 = 21
     # parameters = (:Wave2D,:□,:CubicSpline)
-    # n𝒑 = 15
+    parameters = (:Wave2D,:□,:Gaussian)
+    n𝒑 = 15
     scheme = ApproxOperator.quadraturerule(s)
 
     elements = Dict([
