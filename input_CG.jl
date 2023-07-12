@@ -13,11 +13,8 @@ function import_meshfree(filename::String,ndiv::Int)
         node.z = p.z
         push!(nodes,node)
     end
-    sp = ApproxOperator.RegularGrid(x,y,z,n=1,γ=2)
-
     parameters = (:Wave2D,:□,:Gaussian)
     n𝒑 = 15
-    scheme = ApproxOperator.quadraturerule(s)
 
     elements = Dict([
         "Ω"=>ReproducingKernel{parameters...,:Tri3}[],
@@ -27,6 +24,7 @@ function import_meshfree(filename::String,ndiv::Int)
     𝓖 = Node{(:𝑔,:𝐺,:𝐶,:𝑠),4}[]
 
     ng = (ndiv+1)^2
+    ns = length(nds)
     data = Dict([
         :x=>(2,zeros(ng)),
         :y=>(2,zeros(ng)),
