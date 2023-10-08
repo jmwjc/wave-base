@@ -1,7 +1,7 @@
 
-using Revise, ApproxOperator, BenchmarkTools, Printf, SparseArrays, Pardiso, TimerOutputs
+using Revise, ApproxOperator, BenchmarkTools, Printf, SparseArrays, Pardiso, TimerOutputs, LinearAlgebra
 include("input.jl")
-elements,nodes,elms,nds = import_gauss_quadratic("./msh/test_50.msh","./msh/test_50.msh",:TriGI3)
+elements,nodes,elms,nds = import_gauss_quadratic("./msh/test_40.msh","./msh/test_40.msh",:TriGI3)
 # elements,nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 # nodes = ApproxOperator.importcomsol_fem("圆形骨料.mphtxt")
 
@@ -14,7 +14,7 @@ nₑ = length(elements["Ω"])
 nₒ = length(nds)
 nₑₒ = length(elms["Ω"])
 
-s = 1.5*410/50*ones(nₚ)
+s = 2.5*410/40*ones(nₚ)
 push!(nodes,:s₁=>s,:s₂=>s,:s₃=>s)
 
 @timeit to "shape function" begin
@@ -58,6 +58,8 @@ fα = zeros(2*nₚ)
 ops[1](elements["Ω"],k)
 ops[4](elements["Ω"],m)
 ops[2](elements["Γ"],k,fα)
+# c = cond(k,1)
+# print(c)
 end
 
 d₁ = zeros(nₚ)
@@ -71,7 +73,7 @@ F₀ = 1
 𝑓 = 100
 force_time = 1/𝑓
 Δt = π*force_time/80
-total_time = 250*Δt
+total_time = 500*Δt
 times = 0.0:Δt:total_time
 d = zeros(2nₚ)
 v = zeros(2nₚ)
@@ -136,7 +138,7 @@ for (n,t) in enumerate(times)
         σ₁₂[j] = Cᵢⱼᵢⱼ*ε₁₂
     end
 
-    fo = open("./vtk/50/figure"*string(n,pad=4)*".vtk","w")
+    fo = open("./vtk/figure"*string(n,pad=4)*".vtk","w")
     @printf fo "# vtk DataFile Version 2.0\n"
     @printf fo "Test\n"
     @printf fo "ASCII\n"

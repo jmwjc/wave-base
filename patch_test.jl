@@ -1,6 +1,6 @@
 using Revise, ApproxOperator, BenchmarkTools
 include("importmsh.jl")
-elements,nodes = import_fem("./msh/test.msh")
+elements,nodes = import_fem("./msh/test_8.msh")
 
 
 nₚ = length(nodes)

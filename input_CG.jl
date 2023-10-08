@@ -13,6 +13,7 @@ function import_meshfree(filename::String,ndiv::Int)
         node.z = p.z
         push!(nodes,node)
     end
+    # parameters = (:Wave2D,:□,:CubicSpline)
     parameters = (:Wave2D,:□,:Gaussian)
     n𝒑 = 15
 
